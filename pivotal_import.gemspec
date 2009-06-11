@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = %q{FIX (describe your package)}
   s.email = ["fchang@researchedgellc.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "PostInstall.txt", "README.rdoc"]
-  s.files = ["History.txt", "Manifest.txt", "PostInstall.txt", "README.rdoc", "Rakefile", "lib/pivotal_import.rb", "lib/pivotal_import/"script/console", "script/destroy", "script/generate", "spec/pivotal_import_spec.rb", "spec/spec.opts", "spec/spec_helper.rb", "tasks/rspec.rake"]
+  s.files = ["History.txt", "Manifest.txt", "PostInstall.txt", "README.rdoc", "Rakefile", "bin/import_current_iteration_stories_to_mingle", "lib/pivotal_import.rb", "lib/pivotal/story.rb", "lib/pivotal_import/import_current_iteration_stories_to_mingle_csv.rb", "lib/pivotal_import/mingle_csv_import.rb", "script/console", "script/destroy", "script/generate", "spec/spec.opts", "spec/spec_helper.rb", "tasks/rspec.rake"]
   s.has_rdoc = true
   s.homepage = %q{http://github.com/fkchang/pivotal_import}
   s.post_install_message = %q{PostInstall.txt}
