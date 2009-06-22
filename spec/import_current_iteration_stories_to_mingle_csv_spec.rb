@@ -1,4 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
+require 'ostruct'
+
 include PivotalImport
 describe ImportCurrentIterationStoriesToMingleCsv do
 
@@ -98,14 +100,33 @@ describe ImportCurrentIterationStoriesToMingleCsv do
     mock_project = mock( "Mock Project")
     mock_story = mock( "Mock story")
     mock_story.should_receive( :current?).and_return( true)
+    mock_story.stub!( :iteration).and_return( OpenStruct.new( :start => Time.parse( "6/22/2009")))
     mock_project.should_receive( :stories).and_return( [mock_story])
     Pivotal::Project.should_receive( :find).with( "project_id").and_return( mock_project)
     ImportCurrentIterationStoriesToMingleCsv.should_receive( :save_dotfile)
     mock_mci = mock( "MingleCsvImport")
-    mock_mci.should_receive( :generate_csv).with( [mock_story])
+    mock_mci.should_receive( :generate_csv).with( [mock_story,
+                                                   anything, anything, anything,
+                                                   anything
+                                                  ])
     PivotalImport::MingleCsvImport.should_receive( :new).and_return( mock_mci)
     ImportCurrentIterationStoriesToMingleCsv.import( [])
   end
 
+  it "should create default stories" do
+
+    iteration = OpenStruct.new( :start => Time.parse( "6/22/2009"))
+    story = Pivotal::Story.new( :iteration => iteration)
+    stories = [ story]
+    ImportCurrentIterationStoriesToMingleCsv.add_std_stories( stories)
+    stories.size.should == 5
+    [ "09-06-26 Operational Improvements",
+      "09-06-26 Defects",
+      "09-06-26 Cosmetic",
+      "09-06-26 User Requested"].each_with_index { |story_name, i|
+      stories[i+1].name.should == story_name
+    }
+
+  end
 
 end

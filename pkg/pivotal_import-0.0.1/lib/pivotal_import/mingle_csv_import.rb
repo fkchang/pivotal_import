@@ -40,19 +40,25 @@ module PivotalImport
     end
 
     def entry_for( pivotal_story)
+      p pivotal_story
       values = { }
       values["Name"] = pivotal_story.name
+      values["Type"] = "Story"
       values["Pivotal Story"] = pivotal_story.url
-      values["Description"] = pivotal_story.description
-      values["Current Estimate"] = pivotal_story.estimate
-      values["Original Estimate"] = pivotal_story.estimate
-      values["Iteration"] = mingle_iteration_name( pivotal_story.iteration)
+      desc = pivotal_story.description ? pivotal_story.description.gsub( /"/, "'") : ""
+      values["Description"] = "\"#{desc}\""
+      estimate = pivotal_story.estimate > -1 ? pivotal_story.estimate : 1
+      values["Current Estimate"] = estimate
+      values["Original Estimate"] = estimate
+      values["Iteration"] = mingle_iteration_name( pivotal_story.iteration) if pivotal_story.respond_to?( :iteration)
       entries = []
       @@fields.each { |field|
         entry = nil
         entry = values[field] if values[field]
+        puts "#{field} = #{entry}"
         entries << entry
       }
+      p entries.join( "\t")
       entries.join( "\t")
     end
 
@@ -65,7 +71,13 @@ module PivotalImport
     end
 
     def generate_csv( stories)
-      stories.map { |story| entry_for( story)}.unshift( header).join( "\n")
+
+      entries = stories.map { |story|
+        entry_for( story)
+      }.unshift( header)
+      p entries
+      entries.join( "\n")
+
     end
 
 

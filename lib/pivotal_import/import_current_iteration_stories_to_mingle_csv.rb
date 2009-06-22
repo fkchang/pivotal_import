@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'ostruct'
+
 module PivotalImport
 
   class ImportCurrentIterationStoriesToMingleCsv
@@ -46,6 +49,7 @@ module PivotalImport
     end
 
     # gets info from either asking the user, or a saved dotfile
+    # used for the weekly import from pivotal to mingle
     def self.import( argv)
       api_token, project_id = nil, nil
       if argv.size == 0
@@ -65,11 +69,55 @@ module PivotalImport
         if @project
           save_dotfile( api_token, project_id)
           stories = @project.stories.find_all { |story| story.current?}
+          add_std_stories( stories)
           mci = PivotalImport::MingleCsvImport.new
           puts mci.generate_csv( stories)
         end
       end
     end
 
+    # adds the std stories we have every iteration
+    # operational improvements, defects, cosmetic, user requested
+    def self.add_std_stories( stories)
+      iteration = stories.first.iteration
+      start = iteration.start
+      month = start.month
+      day = (start + 4.days).day
+      year = start.year.to_s
+      prefix = "#{year[-2..-1]}-#{sprintf( "%02d", month)}-#{sprintf( "%02d", day)}"
+      ["Operational Improvements", "Defects", "Cosmetic", "User Requested"].each {  |story_name|
+        stories << OpenStruct.new( :name => "#{prefix} #{story_name}",
+                                   :iteration => iteration,
+                                   :estimate => 2
+                                   )
+      }
+    end
+
+    # used for release planning
+    def self.import_backlog( argv)
+      api_token, project_id = nil, nil
+      if argv.size == 0
+        if have_dotfile?
+          api_token = @dotfile_contents["api_token"]
+          project_id = @dotfile_contents["project_id"]
+        else
+          # get dotfile info? or just usage
+          api_token, project_id = get_pivotal_values
+
+        end
+        # should we support ARGV stuff? mebbe later
+      end
+      if !api_token.blank? && !project_id.blank?
+        Pivotal.token = api_token
+        @project = Pivotal::Project.find project_id
+        if @project
+          save_dotfile( api_token, project_id)
+          stories = @project.stories.find_all { |story| story.backlog?}
+          mci = PivotalImport::MingleCsvImport.new
+          puts mci.generate_csv( stories)
+        end
+      end
+    end
   end
+
 end
